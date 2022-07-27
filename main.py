@@ -73,7 +73,18 @@ class Square:
         pygame.draw.rect(window, self.color, (self.x, self.y, self.width, self.width))
 
     def update_neighbors(self, grid):
-        pass
+        self.neighbors = []
+        if self.row < self.rows - 1 and not grid[self.row + 1][self.column].isObstacle():
+            self.neighbors.append(grid[self.row + 1][self.column])
+
+        if self.row > 0 and not grid[self.row - 1][self.column].isObstacle():
+            self.neighbors.append(grid[self.row - 1][self.column])
+
+        if self.column < self.rows - 1 and not grid[self.row][self.column + 1].isObstacle():
+            self.neighbors.append(grid[self.row][self.column + 1])
+
+        if self.column > 0 and not grid[self.row][self.column - 1].isObstacle():
+            self.neighbors.append(grid[self.row][self.column - 1])
 
     def __lt__(self, other):
         return False
@@ -121,6 +132,34 @@ def getPositionByMouse(position, rows, width):
     return row, column
 
 
+def algorithm(draw, grid, startPosition, endPosition):
+    counter = 0
+    nodeQueue = PriorityQueue()
+    nodeQueue.put((0, counter, startPosition)) # nodul de inceput
+    previousPath = {}
+    g_function = {spot: float("inf") for row in grid for spot in row}
+    g_function[startPosition] = 0
+    f_function = {spot: float("inf") for row in grid for spot in row}
+    f_function[startPosition] = hFunction(startPosition.getPosition(), endPosition.getPosition())
+
+    setHash = {startPosition} #tine minte cine e in nodeQueue
+
+    while not nodeQueue.empty():
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+
+        current = nodeQueue.get()[2]
+        setHash.remove(current)
+
+        if current == endPosition:
+            pass #make path
+            return True
+
+        for neighbor in current.getNeighbors:
+            pass
+
+
 def main(window, width):
     rows = 50
     grid = build_grid(rows, width)
@@ -134,7 +173,6 @@ def main(window, width):
     while run:
         draw(window, grid, rows, width)
         for event in pygame.event.get():
-            print(event.type)
             if event.type == pygame.QUIT:
                 run = False
             if pygame.mouse.get_pressed()[0]:
@@ -154,8 +192,21 @@ def main(window, width):
                     square.setObstacle()
 
             elif pygame.mouse.get_pressed()[2]:
-                pass
+                position = pygame.mouse.get_pos()
+                row, column = getPositionByMouse(position, rows, width)
+                square = grid[row][column]
+                square.reset()
+                if square == startPosition:
+                    startPosition = None
+                elif square == endPosition:
+                    endPosition = None
 
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_SPACE and not startPosition:
+                    for row in grid:
+                        for column in row:
+                            column.update_neighbors()
+                    algorithm(lambda: draw(window, grid, rows, width), grid, startPosition, endPosition)
     pygame.quit()
 
 
