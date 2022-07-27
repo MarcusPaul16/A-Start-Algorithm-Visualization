@@ -115,8 +115,8 @@ def getPositionByMouse(position, rows, width):
     gap = width // rows
     x, y = position
 
-    row = y // gap
-    column = x // gap
+    row = x // gap
+    column = y // gap
 
     return row, column
 
@@ -129,7 +129,6 @@ def main(window, width):
     endPosition = None
 
     run = True
-    started = True
 
     draw(window, grid, rows, width)
     while run:
@@ -138,18 +137,15 @@ def main(window, width):
             print(event.type)
             if event.type == pygame.QUIT:
                 run = False
-            if started:
-                continue
             if pygame.mouse.get_pressed()[0]:
-                print("merge")
                 position = pygame.mouse.get_pos()
                 row, column = getPositionByMouse(position, rows, width)
                 square = grid[row][column]
-                if not startPosition:
+                if not startPosition and square != startPosition:
                     startPosition = square
                     startPosition.setStart()
                     print(3)
-                elif not endPosition:
+                elif not endPosition and square != startPosition:
                     endPosition = square
                     endPosition.setEnd()
                     print(3)
