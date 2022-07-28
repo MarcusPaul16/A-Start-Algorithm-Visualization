@@ -95,6 +95,7 @@ def hFunction(h1, h2):
     x2, y2 = h2
     return abs(x1 - x2) + abs(y1 - y2)
 
+
 def build_grid(rows, width):
     grid = []
     gap = width // rows
@@ -106,12 +107,14 @@ def build_grid(rows, width):
 
     return grid
 
+
 def build_grid_lines(window, rows, width):
     gap = width // rows
     for i in range(rows):
         pygame.draw.line(window, COLORS['GREY'], (0, i * gap), (width, i * gap))
         for j in range(rows):
             pygame.draw.line(window, COLORS['GREY'], (j * gap, 0), (j * gap, width))
+
 
 def draw(window, grid, rows, width):
     window.fill(COLORS['WHITE'])
@@ -121,6 +124,7 @@ def draw(window, grid, rows, width):
 
     build_grid_lines(window, rows, width)
     pygame.display.update()
+
 
 def getPositionByMouse(position, rows, width):
     gap = width // rows
@@ -132,32 +136,53 @@ def getPositionByMouse(position, rows, width):
     return row, column
 
 
+def reconstruct_path(previousPath, current, draw):
+    while current in previousPath:
+        current = previousPath[current]
+        current.isEnd()
+        draw()
+
+
 def algorithm(draw, grid, startPosition, endPosition):
     counter = 0
     nodeQueue = PriorityQueue()
-    nodeQueue.put((0, counter, startPosition)) # nodul de inceput
+    nodeQueue.put((0, counter, startPosition))  # nodul de inceput
     previousPath = {}
     g_function = {spot: float("inf") for row in grid for spot in row}
     g_function[startPosition] = 0
     f_function = {spot: float("inf") for row in grid for spot in row}
     f_function[startPosition] = hFunction(startPosition.getPosition(), endPosition.getPosition())
 
-    setHash = {startPosition} #tine minte cine e in nodeQueue
+    setHash = {startPosition}  # tine minte cine e in nodeQueue
 
     while not nodeQueue.empty():
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pygame.quit()
 
-        current = nodeQueue.get()[2]
+        current = nodeQueue.get()[2]  # ia elementul de pe poz 2, adica nodul la care ne aflam, nodul curent
         setHash.remove(current)
 
         if current == endPosition:
-            pass #make path
-            return True
+            reconstruct_path(previousPath, endPosition, draw)
 
-        for neighbor in current.getNeighbors:
-            pass
+        for neighbor in current.neighbors:
+            g_score_temporar = g_function[current] + 1
+
+            if g_score_temporar < g_function[neighbor]:
+                previousPath[neighbor] = current
+                g_function[neighbor] = g_score_temporar
+                f_function[neighbor] = g_score_temporar + hFunction(neighbor.getPosition(), endPosition.getPosition())
+                if neighbor not in setHash:
+                    counter += 1
+                    nodeQueue.put((f_function[neighbor], counter, neighbor))
+                    setHash.add(neighbor)
+                    neighbor.setNotVisited()
+            draw()
+
+            if current != startPosition:
+                current.setVisited()
+    return False
 
 
 def main(window, width):
@@ -182,11 +207,9 @@ def main(window, width):
                 if not startPosition and square != startPosition:
                     startPosition = square
                     startPosition.setStart()
-                    print(3)
                 elif not endPosition and square != startPosition:
                     endPosition = square
                     endPosition.setEnd()
-                    print(3)
 
                 elif square != startPosition and square != endPosition:
                     square.setObstacle()
@@ -202,11 +225,16 @@ def main(window, width):
                     endPosition = None
 
             if event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_SPACE and not startPosition:
+                if event.key == pygame.K_SPACE and startPosition and endPosition:
                     for row in grid:
                         for column in row:
-                            column.update_neighbors()
+                            column.update_neighbors(grid)
                     algorithm(lambda: draw(window, grid, rows, width), grid, startPosition, endPosition)
+
+                if event.key == pygame.K_c:
+                    start = None
+                    end = None
+                    grid = build_grid(rows, width)
     pygame.quit()
 
 
