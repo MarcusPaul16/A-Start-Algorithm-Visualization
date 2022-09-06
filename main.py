@@ -51,8 +51,9 @@ class Square:
     def reset(self):
         self.color = COLORS['WHITE']
 
-    def setStart(self):
-        self.color = COLORS['ORANGE']
+
+    def setPath(self):
+        self.color = COLORS['TURQUOISE']
 
     def setVisited(self):
         self.color = COLORS['RED']
@@ -138,8 +139,8 @@ def getPositionByMouse(position, rows, width):
 
 def reconstruct_path(previousPath, current, draw):
     while current in previousPath:
+        current.setPath()
         current = previousPath[current]
-        current.isEnd()
         draw()
 
 
@@ -165,6 +166,7 @@ def algorithm(draw, grid, startPosition, endPosition):
 
         if current == endPosition:
             reconstruct_path(previousPath, endPosition, draw)
+            break
 
         for neighbor in current.neighbors:
             g_score_temporar = g_function[current] + 1
